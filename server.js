@@ -19,15 +19,18 @@ app.use(express.json());
 
 // CORS Configuration
 app.use(cors({
-    origin: [
-        'https://edugrak-psi.vercel.app',
-        'https://admin-edugrak.vercel.app',
-        'http://localhost:5500',
-        'http://127.0.0.1:5500'
-    ],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
+    origin: function (origin, callback) {
+        // Izinkan jika tidak ada origin (seperti mobile apps/curl) atau jika berasal dari domain edugrak
+        if (!origin || origin.includes('vercel.app') || origin.includes('localhost') || origin.includes('127.0.0.1')) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+    credentials: true,
+    optionsSuccessStatus: 200
 }));
 
 // Cloudinary Configuration
