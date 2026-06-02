@@ -19,9 +19,15 @@ app.use(express.json());
 
 // CORS Configuration
 app.use(cors({
-    origin: '*', // Untuk sementara allow all agar mudah testing, nanti bisa diganti domain spesifik
+    origin: [
+        'https://edugrak-psi.vercel.app',
+        'https://admin-edugrak.vercel.app',
+        'http://localhost:5500',
+        'http://127.0.0.1:5500'
+    ],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
 }));
 
 // Cloudinary Configuration
