@@ -7,57 +7,13 @@ const jwt = require('jsonwebtoken');
 const midtransClient = require('midtrans-client');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
-const cloudinary = require('cloudinary').v2;
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const multer = require('multer');
 
-const User = require('./models/user');
-const AppData = require('./models/appdata');
+const User = require('./models/User');
+const AppData = require('./models/AppData');
 
 const app = express();
 app.use(express.json());
-
-// CORS Configuration
-app.use(cors({
-    origin: function (origin, callback) {
-        // Izinkan jika tidak ada origin (seperti mobile apps/curl) atau jika berasal dari domain edugrak
-        if (!origin || origin.includes('vercel.app') || origin.includes('localhost') || origin.includes('127.0.0.1')) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
-    credentials: true,
-    optionsSuccessStatus: 200
-}));
-
-// Cloudinary Configuration
-cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET
-});
-
-const storage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
-        folder: 'edugrak_uploads',
-        allowed_formats: ['jpg', 'png', 'jpeg', 'webp']
-    }
-});
-
-const upload = multer({ storage: storage });
-
-// Upload Route
-app.post('/api/upload', upload.single('image'), (req, res) => {
-    try {
-        res.json({ url: req.file.path });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
+app.use(cors());
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI)
@@ -271,7 +227,7 @@ app.post('/api/payment/create', async (req, res) => {
             }],
             custom_field1: user.email,
             callbacks: {
-                finish: `${process.env.FRONTEND_URL}/index.html?payment=success`
+                finish: "http://localhost:5500/index.html?payment=success" 
             }
         };
 
@@ -326,22 +282,7 @@ app.post('/api/appdata', async (req, res) => {
     try {
         let data = await AppData.findOne();
         if (data) {
-            // Overwrite all fields to ensure deep updates
-            data.videos = req.body.videos;
-            data.questionsBank = req.body.questionsBank;
-            data.latihanDetails = req.body.latihanDetails;
-            data.subtesData = req.body.subtesData;
-            data.leaderboards = req.body.leaderboards;
-            data.irtConfigs = req.body.irtConfigs;
-            data.premiumPackages = req.body.premiumPackages;
-            data.coupons = req.body.coupons;
-            
-            // Mark modified for safety
-            data.markModified('questionsBank');
-            data.markModified('latihanDetails');
-            data.markModified('leaderboards');
-            data.markModified('irtConfigs');
-            
+            Object.assign(data, req.body);
             await data.save();
         } else {
             data = new AppData(req.body);
