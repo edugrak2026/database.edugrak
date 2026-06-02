@@ -11,8 +11,8 @@ const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
 
-const User = require('./user');
-const AppData = require('./appdata');
+const User = require('./models/user');
+const AppData = require('./models/appdata');
 
 const app = express();
 app.use(express.json());
@@ -326,7 +326,22 @@ app.post('/api/appdata', async (req, res) => {
     try {
         let data = await AppData.findOne();
         if (data) {
-            Object.assign(data, req.body);
+            // Overwrite all fields to ensure deep updates
+            data.videos = req.body.videos;
+            data.questionsBank = req.body.questionsBank;
+            data.latihanDetails = req.body.latihanDetails;
+            data.subtesData = req.body.subtesData;
+            data.leaderboards = req.body.leaderboards;
+            data.irtConfigs = req.body.irtConfigs;
+            data.premiumPackages = req.body.premiumPackages;
+            data.coupons = req.body.coupons;
+            
+            // Mark modified for safety
+            data.markModified('questionsBank');
+            data.markModified('latihanDetails');
+            data.markModified('leaderboards');
+            data.markModified('irtConfigs');
+            
             await data.save();
         } else {
             data = new AppData(req.body);
