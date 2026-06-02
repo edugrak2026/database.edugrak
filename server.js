@@ -11,8 +11,8 @@ const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
 
-const User = require('./models/user');
-const AppData = require('./models/appdata');
+const User = require('./user');
+const AppData = require('./appdata');
 
 const app = express();
 app.use(express.json());
